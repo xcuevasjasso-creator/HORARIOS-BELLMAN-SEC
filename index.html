@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>JSFiddle 0jfb59ya</title>
+  <title>JSFiddle su6vrwpq</title>
 
   <style>
     
@@ -92,6 +92,7 @@
 
         table th, table td {
             width: 11.5%;
+            border: 1px solid #000000 !important;
         }
         table td:first-child, table th:first-child {
             width: 19% !important;
@@ -257,7 +258,7 @@
             </div>
             
             <div class="overflow-x-auto">
-                <table class="w-full border-collapse text-center text-[11px] md:text-xs table-fixed" id="schedule-table"></table>
+                <table class="w-full border-collapse text-center text-[11px] md:text-xs table-fixed border border-black" id="schedule-table"></table>
             </div>
         </section>
     </main>
@@ -843,7 +844,6 @@
         function autoPlanWeek() {
             if(!confirm("¿Ejecutar Auto-Planificador con bloques estables e inercia de turno (Regla de Oro)?")) return;
 
-            // Analizar días con menor ocupación para distribuir los 2 OFF de manera inteligente
             let occupancyWithIndex = currentData.occupancy.map((occ, idx) => ({ occ, idx }));
             occupancyWithIndex.sort((a, b) => a.occ - b.occ);
             
@@ -860,7 +860,6 @@
                         let isVacation = member.shifts.some(s => s.type === 'vacation');
                         if (isVacation) return;
 
-                        // REGLA DE ORO: Asignar un BLOQUE ESTABLE por colaborador (sin saltos drásticos de turno diario)
                         let assignedShift;
                         if (deptNameUpper.includes("SEGURIDAD")) {
                             let blockType = staffIdx % 3;
@@ -873,12 +872,10 @@
                             else assignedShift = { text: "2 pm - 11 pm", type: "afternoon" };
                         }
 
-                        // Rellenar toda la semana con el bloque estable de turno
                         for (let d = 0; d < 7; d++) {
                             member.shifts[d] = JSON.parse(JSON.stringify(assignedShift));
                         }
 
-                        // Asignar los 2 Días OFF de forma escalonada priorizando días de menor ocupación
                         let offDay1 = (calmDay1 + staffIdx) % 7;
                         let offDay2 = (calmDay2 + staffIdx * 2) % 7;
                         if (offDay1 === offDay2) {
@@ -891,7 +888,6 @@
                 }
             });
 
-            // Blindaje: Garantizar 100% que los turnos obligatorios estén cubiertos todos los días
             ensureInbreakableCoverage();
 
             triggerAutosave();
@@ -915,7 +911,6 @@
                             }
                         });
 
-                        // Compensar si faltara cobertura en un turno crítico por descanso
                         if (!hasMorning) {
                             let available = dept.staff.find(st => st.shifts[d].text.includes('OFF') && !st.shifts[d].text.includes('Vacaciones'));
                             if (available) {
@@ -953,41 +948,41 @@
             const table = document.getElementById('schedule-table');
             let html = '';
 
-            html += `<tr class="bg-teal-400 text-slate-900 font-bold border-b border-teal-500">`;
-            html += `<td class="py-2 px-3 border-r border-teal-500">Días</td>`;
-            weekInfo.days.forEach(day => html += `<td class="py-2 px-2 border-r border-teal-500">${day}</td>`);
+            html += `<tr class="bg-teal-400 text-slate-900 font-bold border-b border-black">`;
+            html += `<td class="py-2 px-3 border border-black">Días</td>`;
+            weekInfo.days.forEach(day => html += `<td class="py-2 px-2 border border-black">${day}</td>`);
             html += `</tr>`;
 
-            html += `<tr class="bg-amber-400 text-slate-900 font-bold border-b border-amber-500">`;
-            html += `<td class="py-2.5 px-3 border-r border-amber-500">Dinners</td>`;
+            html += `<tr class="bg-amber-400 text-slate-900 font-bold border-b border-black">`;
+            html += `<td class="py-2.5 px-3 border border-black">Dinners</td>`;
             currentData.dinners.forEach((dinner, idx) => {
-                html += `<td class="py-2 px-2 border-r border-amber-500 text-[11px] font-semibold cursor-pointer hover:bg-amber-300 transition relative group" onclick="openDinnerModal(${idx})">`;
+                html += `<td class="py-2 px-2 border border-black text-[11px] font-semibold cursor-pointer hover:bg-amber-300 transition relative group" onclick="openDinnerModal(${idx})">`;
                 html += `<div class="whitespace-normal leading-tight px-1"><span>${dinner}</span></div><span class="absolute right-1 top-1 opacity-0 group-hover:opacity-100 text-[9px] text-amber-900"><i class="fa-solid fa-pen"></i></span></td>`;
             });
             html += `</tr>`;
 
-            html += `<tr class="bg-teal-300 text-slate-900 font-medium border-b border-teal-400">`;
-            html += `<td class="py-2.5 px-3 border-r border-teal-400 font-semibold">Evento</td>`;
+            html += `<tr class="bg-teal-300 text-slate-900 font-medium border-b border-black">`;
+            html += `<td class="py-2.5 px-3 border border-black font-semibold">Evento</td>`;
             currentData.events.forEach((ev, idx) => {
-                html += `<td class="py-2 px-2 border-r border-teal-400 cursor-pointer hover:bg-teal-200 transition relative group" onclick="openEventModal(${idx})">`;
+                html += `<td class="py-2 px-2 border border-black cursor-pointer hover:bg-teal-200 transition relative group" onclick="openEventModal(${idx})">`;
                 html += `<div class="whitespace-normal leading-tight px-1"><span>${ev}</span></div><span class="absolute right-1 top-1 opacity-0 group-hover:opacity-100 text-[9px] text-teal-900"><i class="fa-solid fa-pen"></i></span></td>`;
             });
             html += `</tr>`;
 
-            html += `<tr class="bg-sky-400 text-slate-900 font-bold border-b-2 border-indigo-900">`;
-            html += `<td class="py-2 px-3 border-r border-sky-500">BH Ocupación</td>`;
+            html += `<tr class="bg-sky-400 text-slate-900 font-bold border-b-2 border-black">`;
+            html += `<td class="py-2 px-3 border border-black">BH Ocupación</td>`;
             currentData.occupancy.forEach((occ, idx) => {
-                html += `<td class="py-2 px-2 border-r border-sky-500 font-bold text-indigo-950 cursor-pointer hover:bg-sky-300 transition relative group" onclick="openOccupancyModal(${idx})">`;
+                html += `<td class="py-2 px-2 border border-black font-bold text-indigo-950 cursor-pointer hover:bg-sky-300 transition relative group" onclick="openOccupancyModal(${idx})">`;
                 html += `<span>${occ}</span><span class="absolute right-1 top-1 opacity-0 group-hover:opacity-100 text-[9px] text-indigo-900"><i class="fa-solid fa-pen"></i></span></td>`;
             });
             html += `</tr>`;
 
             currentData.departments.forEach((dept, dIdx) => {
-                html += `<tr class="bg-indigo-950 text-white font-bold text-left"><td colspan="8" class="py-2 px-3 tracking-wider text-[11px] uppercase">${dept.name}</td></tr>`;
+                html += `<tr class="bg-indigo-950 text-white font-bold text-left"><td colspan="8" class="py-2 px-3 tracking-wider text-[11px] uppercase border border-black">${dept.name}</td></tr>`;
 
                 dept.staff.forEach((member, sIdx) => {
-                    html += `<tr class="border-b border-slate-200 hover:bg-slate-50/80 transition">`;
-                    html += `<td class="py-2 px-3 font-semibold text-slate-700 text-left border-r border-slate-200 bg-slate-50/60 truncate">${member.name}</td>`;
+                    html += `<tr class="border-b border-black hover:bg-slate-50/80 transition">`;
+                    html += `<td class="py-2 px-3 font-semibold text-slate-700 text-left border border-black bg-slate-50/60 truncate">${member.name}</td>`;
                     
                     member.shifts.forEach((shift, dayIdx) => {
                         let cssClass = '';
@@ -998,7 +993,7 @@
                         else if(shift.type === 'off') cssClass = 'shift-off';
                         else if(shift.type === 'spa') cssClass = 'shift-spa';
 
-                        html += `<td class="py-2 px-1.5 border-r border-slate-200 text-[11px] relative has-tooltip cursor-pointer interactive-cell rounded-md m-0.5 ${cssClass}" onclick="openEditModal(${dIdx}, ${sIdx}, ${dayIdx})">`;
+                        html += `<td class="py-2 px-1.5 border border-black text-[11px] relative has-tooltip cursor-pointer interactive-cell rounded-none m-0 ${cssClass}" onclick="openEditModal(${dIdx}, ${sIdx}, ${dayIdx})">`;
                         html += `<div class="whitespace-normal leading-tight">${shift.text.replace('\n', '<br>')}</div></td>`;
                     });
                     html += `</tr>`;
